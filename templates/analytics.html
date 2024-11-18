@@ -1,0 +1,309 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12 d-flex justify-content-between align-items-center">
+        <h2>Analytics Dashboard</h2>
+        <button class="btn btn-outline-primary" onclick="exportAnalytics()">
+            <i class="fas fa-download"></i> Export Data
+        </button>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Key Metrics -->
+    <div class="col-md-2">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Total Simulations</h5>
+                <h2 class="mb-0">{{ metrics.total_simulations }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Active Sims</h5>
+                <h2 class="mb-0">{{ metrics.active_simulations }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Active Personas</h5>
+                <h2 class="mb-0">{{ metrics.total_personas }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Total Interactions</h5>
+                <h2 class="mb-0">{{ metrics.total_interactions }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Avg. Interactions/Sim</h5>
+                <h2 class="mb-0">{{ "%.1f"|format(metrics.avg_interactions_per_sim) }}</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mt-2">
+    <!-- Interaction Timeline -->
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">30-Day Interaction Trend</h5>
+                <canvas id="timelineChart"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Hourly Activity Heatmap -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Activity by Hour</h5>
+                <canvas id="heatmapChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mt-2">
+    <!-- Top Personas Analysis -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Top Personas Activity</h5>
+                <canvas id="personaActivityChart"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Personality Traits Analysis -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Personality Traits Impact</h5>
+                <canvas id="traitsChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mt-2">
+    <!-- Recent Activity Feed -->
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Recent Activities</h5>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>Simulation</th>
+                                <th>Initiator</th>
+                                <th>Interaction</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for activity in recent_activities %}
+                            <tr>
+                                <td>{{ activity.timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+                                <td>{{ activity.simulation_name }}</td>
+                                <td>{{ activity.initiator_name }}</td>
+                                <td>{{ activity.description }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Timeline Chart
+    const timelineCtx = document.getElementById('timelineChart').getContext('2d');
+    new Chart(timelineCtx, {
+        type: 'line',
+        data: {
+            labels: {{ timeline_data.labels|tojson }},
+            datasets: [{
+                label: 'Interactions',
+                data: {{ timeline_data.values|tojson }},
+                borderColor: 'rgba(75, 192, 192, 1)',
+                tension: 0.1,
+                fill: true,
+                backgroundColor: 'rgba(75, 192, 192, 0.1)'
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Daily Interaction Trend'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Number of Interactions'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Date'
+                    }
+                }
+            }
+        }
+    });
+
+    // Persona Activity Chart
+    const activityCtx = document.getElementById('personaActivityChart').getContext('2d');
+    new Chart(activityCtx, {
+        type: 'bar',
+        data: {
+            labels: {{ persona_distribution.labels|tojson }},
+            datasets: [{
+                label: 'Initiated',
+                data: {{ persona_distribution.initiated|tojson }},
+                backgroundColor: 'rgba(75, 192, 192, 0.8)'
+            }, {
+                label: 'Received',
+                data: {{ persona_distribution.received|tojson }},
+                backgroundColor: 'rgba(153, 102, 255, 0.8)'
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Persona Interaction Distribution'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    stacked: true
+                },
+                x: {
+                    stacked: true
+                }
+            }
+        }
+    });
+
+    // Hourly Activity Heatmap
+    const heatmapCtx = document.getElementById('heatmapChart').getContext('2d');
+    new Chart(heatmapCtx, {
+        type: 'bar',
+        data: {
+            labels: {{ hourly_activity.labels|tojson }},
+            datasets: [{
+                label: 'Activity',
+                data: {{ hourly_activity.values|tojson }},
+                backgroundColor: 'rgba(75, 192, 192, 0.8)'
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Activity by Hour of Day'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Interactions'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Hour (24h)'
+                    }
+                }
+            }
+        }
+    });
+
+    // Personality Traits Impact Chart
+    const traitsCtx = document.getElementById('traitsChart').getContext('2d');
+    new Chart(traitsCtx, {
+        type: 'radar',
+        data: {
+            labels: {{ traits_data.behavior_patterns.labels|tojson }},
+            datasets: [{
+                label: 'Persona Count',
+                data: {{ traits_data.behavior_patterns.counts|tojson }},
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                borderColor: 'rgba(75, 192, 192, 1)'
+            }, {
+                label: 'Interaction Count',
+                data: {{ traits_data.behavior_patterns.interaction_counts|tojson }},
+                backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                borderColor: 'rgba(153, 102, 255, 1)'
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Behavior Patterns Impact'
+                }
+            },
+            scales: {
+                r: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+});
+
+// Export Analytics Function
+function exportAnalytics() {
+    const data = {
+        metrics: {{ metrics|tojson }},
+        timeline_data: {{ timeline_data|tojson }},
+        persona_distribution: {{ persona_distribution|tojson }},
+        traits_data: {{ traits_data|tojson }}
+    };
+    
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'analytics_export_' + new Date().toISOString().split('T')[0] + '.json';
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+}
+</script>
+{% endblock %}

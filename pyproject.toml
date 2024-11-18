@@ -1,0 +1,20 @@
+[project]
+name = "repl-nix-personaimaginationsim"
+version = "0.1.0"
+description = "Add your description here"
+requires-python = ">=3.11"
+dependencies = [
+    "email-validator>=2.2.0",
+    "flask>=3.1.0",
+    "flask-sqlalchemy>=3.1.1",
+    "openai>=1.54.4",
+    "psycopg2-binary>=2.9.10",
+    "flask-socketio>=5.4.1",
+    "flask-cors>=5.0.0",
+    "python-socketio",
+    "eventlet",
+    "flask-login",
+    "python-dotenv",
+    "faker>=32.1.0",
+    "sqlalchemy",
+]

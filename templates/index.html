@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="px-4 py-5 my-5 text-center">
+    <h1 class="display-5 fw-bold">Welcome to TinyTroupe</h1>
+    <div class="col-lg-6 mx-auto">
+        <p class="lead mb-4">
+            Simulate and analyze interactions between personas with specific personalities, interests, and goals using advanced AI.
+        </p>
+        <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+            <a href="{{ url_for('personas') }}" class="btn btn-primary btn-lg px-4 gap-3">Create Personas</a>
+            <a href="{{ url_for('simulation') }}" class="btn btn-outline-secondary btn-lg px-4">Start Simulation</a>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 py-5">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Persona Management</h5>
+                <p class="card-text">Create and manage unique personas with distinct personalities, interests, and goals.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Real-time Simulation</h5>
+                <p class="card-text">Watch personas interact in real-time using advanced GPT-4 powered conversations.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Analysis Dashboard</h5>
+                <p class="card-text">Analyze interaction patterns and outcomes with detailed visualizations.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

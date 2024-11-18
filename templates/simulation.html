@@ -1,0 +1,364 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Simulation Control</h5>
+                <!-- Status Indicator -->
+                <div id="simulation-status" class="alert alert-info" style="display: none;"></div>
+                <!-- Loading Indicator -->
+                <div id="loading-indicator" class="text-center" style="display: none;">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">Processing...</p>
+                </div>
+                
+                <form id="simulation-form">
+                    <div class="mb-3">
+                        <label for="simulation-name" class="form-label">Simulation Name</label>
+                        <input type="text" class="form-control" id="simulation-name" required>
+                    </div>
+
+                    <!-- Conversation Depth Setting -->
+                    <div class="mb-3">
+                        <label for="conversation-depth" class="form-label">Conversation Depth</label>
+                        <select class="form-select" id="conversation-depth" required>
+                            <option value="short">Short (1-2 exchanges)</option>
+                            <option value="medium" selected>Medium (3-5 exchanges)</option>
+                            <option value="long">Long (6-10 exchanges)</option>
+                            <option value="extended">Extended (11-25 exchanges)</option>
+                            <option value="longform">Long-form (26-50 exchanges)</option>
+                            <option value="marathon">Marathon (51-100 exchanges)</option>
+                        </select>
+                        <div class="mt-2">
+                            <div class="progress conversation-depth-indicator">
+                                <div id="depth-progress" class="progress-bar" role="progressbar" style="width: 50%"></div>
+                            </div>
+                            <small class="form-text text-muted">Current depth progress</small>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="scenario" class="form-label">Select Scenario</label>
+                        <select class="form-select" id="scenario" required>
+                            <option value="">Choose a scenario...</option>
+                            {% for scenario in scenarios %}
+                            <option value="{{ scenario.id }}" 
+                                    data-min="{{ scenario.min_participants }}"
+                                    data-max="{{ scenario.max_participants }}"
+                                    data-description="{{ scenario.description }}"
+                                    data-context="{{ scenario.context }}"
+                                    data-difficulty="{{ scenario.difficulty }}"
+                                    data-duration="{{ scenario.duration_minutes }}">
+                                {{ scenario.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <!-- Scenario Details -->
+                        <div id="scenario-details" class="mt-3" style="display: none;">
+                            <div class="card bg-dark">
+                                <div class="card-body">
+                                    <p id="scenario-description" class="mb-2"></p>
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="badge bg-info" id="scenario-difficulty"></span>
+                                        <span class="badge bg-warning" id="scenario-duration"></span>
+                                    </div>
+                                    <div class="participant-info">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span>Required Participants:</span>
+                                            <span id="participant-range"></span>
+                                        </div>
+                                        <div class="progress mt-2">
+                                            <div id="participant-progress" class="progress-bar" role="progressbar" style="width: 0%"></div>
+                                        </div>
+                                        <small id="participant-count" class="text-muted d-block mt-1"></small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Custom Context Input -->
+                        <div class="mb-3" id="scenario-custom-context" style="display: none;">
+                            <label class="form-label">Custom Scenario Context</label>
+                            <textarea class="form-control" id="custom-context" rows="3" 
+                                    placeholder="Add specific details for your scenario"></textarea>
+                            <small class="form-text text-muted">Provide additional context or specific details for this scenario.</small>
+                        </div>
+                        <div id="participant-warning" class="alert alert-warning mt-2" style="display: none;"></div>
+                    </div>
+
+                    <!-- Persona Selection Section -->
+                    <div class="mb-3 persona-selection-container">
+                        <div class="filter-section sticky-top pt-3" style="top: 0; z-index: 1020;">
+                            <h6 class="card-subtitle mb-2">Persona Filters</h6>
+                            <div class="mb-2">
+                                <input type="text" class="form-control" id="persona-search" placeholder="Search by name or traits...">
+                            </div>
+                            <div class="mb-2">
+                                <select class="form-select form-select-sm" id="behavior-filter">
+                                    <option value="">All Patterns</option>
+                                    <option value="balanced">Balanced</option>
+                                    <option value="proactive">Proactive</option>
+                                    <option value="reactive">Reactive</option>
+                                    <option value="analytical">Analytical</option>
+                                    <option value="creative">Creative</option>
+                                </select>
+                            </div>
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <select class="form-select form-select-sm" id="interaction-filter">
+                                        <option value="">All Styles</option>
+                                        <option value="neutral">Neutral</option>
+                                        <option value="formal">Formal</option>
+                                        <option value="casual">Casual</option>
+                                        <option value="enthusiastic">Enthusiastic</option>
+                                        <option value="reserved">Reserved</option>
+                                    </select>
+                                </div>
+                                <div class="col-6">
+                                    <select class="form-select form-select-sm" id="communication-filter">
+                                        <option value="">All Types</option>
+                                        <option value="direct">Direct</option>
+                                        <option value="diplomatic">Diplomatic</option>
+                                        <option value="detailed">Detailed</option>
+                                        <option value="concise">Concise</option>
+                                        <option value="storytelling">Storytelling</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="persona-list mt-3">
+                            <div class="list-group">
+                                {% for persona in personas %}
+                                <div class="list-group-item persona-item" 
+                                     data-name="{{ persona.name | lower }}"
+                                     data-behavior="{{ persona.behavior_pattern | lower }}"
+                                     data-interaction="{{ persona.interaction_style | lower }}"
+                                     data-communication="{{ persona.communication_preference | lower }}"
+                                     data-personality="{{ persona.personality | lower }}"
+                                     data-interests="{{ persona.interests | lower }}"
+                                     data-goals="{{ persona.goals | lower }}"
+                                     data-tags="{{ persona.tags | lower }}">
+                                    <div class="d-flex align-items-center">
+                                        <div class="form-check">
+                                            <input class="form-check-input persona-checkbox" type="checkbox" value="{{ persona.id }}" id="persona-{{ persona.id }}">
+                                        </div>
+                                        <label class="ms-2 form-check-label w-100" for="persona-{{ persona.id }}">
+                                            <div class="fw-bold">{{ persona.name }}</div>
+                                            <small class="text-muted d-block">{{ persona.behavior_pattern | title }}</small>
+                                        </label>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            <div id="no-results-message" class="text-center mt-3" style="display: none;">
+                                <span class="fs-5">No results found.</span>
+                                <button type="button" class="btn btn-sm btn-info" id="clear-filters">Clear Filters</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Multiple Persona Preview -->
+                    <div id="persona-preview" class="card bg-dark mb-3" style="display: none;">
+                        <div class="card-body">
+                            <h6 class="card-title">Selected Personas</h6>
+                            <div id="preview-container" class="preview-scroll-container">
+                                <!-- Preview cards will be dynamically added here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="button" id="start-simulation" class="btn btn-primary">
+                        <i class="fas fa-play"></i> Start Simulation
+                    </button>
+                    <button type="button" id="stop-simulation" class="btn btn-danger" disabled>
+                        <i class="fas fa-stop"></i> Stop Simulation
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">
+                    Simulation Feed
+                    <small class="text-muted float-end" id="interaction-count">0 interactions</small>
+                </h5>
+                <div id="simulation-feed" class="simulation-feed">
+                    <!-- Interactions will be displayed here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Base styles */
+.persona-selection-container {
+    position: relative;
+    background-color: var(--bs-dark);
+    border-radius: 0.375rem;
+    border: 1px solid var(--bs-border-color);
+}
+
+/* Conversation depth indicator styles */
+.conversation-depth-indicator {
+    height: 0.5rem;
+    background-color: var(--bs-dark);
+    border-radius: 0.25rem;
+}
+
+.conversation-depth-indicator .progress-bar {
+    transition: width 0.3s ease;
+}
+
+.conversation-depth-indicator.short .progress-bar {
+    background-color: var(--bs-info);
+    width: 33%;
+}
+
+.conversation-depth-indicator.medium .progress-bar {
+    background-color: var(--bs-warning);
+    width: 66%;
+}
+
+.conversation-depth-indicator.long .progress-bar {
+    background-color: var(--bs-danger);
+    width: 100%;
+}
+
+/* Filter section */
+.filter-section {
+    background-color: var(--bs-dark);
+    padding: 1rem;
+    border-radius: 0.375rem;
+    border-bottom: 1px solid var(--bs-border-color);
+    margin: -1rem -1rem 1rem -1rem;
+}
+
+/* Persona list */
+.persona-list {
+    max-height: 400px;
+    min-height: 200px;
+    overflow-y: auto;
+    padding: 0.5rem;
+    position: relative;
+    scrollbar-width: thin;
+    scrollbar-color: var(--bs-secondary) var(--bs-dark);
+}
+
+/* Scrollbar styling */
+.persona-list::-webkit-scrollbar {
+    width: 8px;
+}
+
+.persona-list::-webkit-scrollbar-track {
+    background: var(--bs-dark);
+    border-radius: 4px;
+}
+
+.persona-list::-webkit-scrollbar-thumb {
+    background: var(--bs-secondary);
+    border-radius: 4px;
+}
+
+.persona-list::-webkit-scrollbar-thumb:hover {
+    background: var(--bs-primary);
+}
+
+/* Persona items */
+.persona-item {
+    background-color: var(--bs-dark);
+    border: 1px solid var(--bs-border-color);
+    transition: all 0.2s ease;
+    cursor: pointer;
+    margin-bottom: 0.5rem;
+    border-radius: 0.375rem;
+}
+
+.persona-item:hover {
+    background-color: rgba(var(--bs-primary-rgb), 0.1);
+    border-color: var(--bs-primary);
+}
+
+.persona-item.selected {
+    border-color: var(--bs-primary);
+    background-color: rgba(var(--bs-primary-rgb), 0.1);
+}
+
+.persona-item.filtered-out {
+    display: none !important;
+}
+
+/* Preview section */
+.preview-scroll-container {
+    max-height: 300px;
+    overflow-y: auto;
+    padding-right: 0.5rem;
+    margin-right: -0.5rem;
+}
+
+.preview-scroll-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.preview-scroll-container::-webkit-scrollbar-track {
+    background: var(--bs-dark);
+}
+
+.preview-scroll-container::-webkit-scrollbar-thumb {
+    background: var(--bs-secondary);
+    border-radius: 3px;
+}
+
+/* No results message */
+#no-results-message {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(var(--bs-dark-rgb), 0.9);
+    padding: 1rem;
+    border-radius: 0.375rem;
+    border: 1px solid var(--bs-border-color);
+    width: 90%;
+    text-align: center;
+}
+
+/* Animations */
+.fade-in {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.fade-in.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .filter-section {
+        position: relative !important;
+        top: 0 !important;
+    }
+    
+    .persona-list {
+        max-height: 300px;
+    }
+}
+</style>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js"></script>
+<script src="{{ url_for('static', filename='js/websocket.js') }}"></script>
+<script src="{{ url_for('static', filename='js/simulation.js') }}"></script>
+{% endblock %}

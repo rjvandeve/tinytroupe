@@ -1,0 +1,473 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <h2>Simulation Results</h2>
+            <div class="btn-group">
+                <button class="btn btn-outline-danger me-2" id="clearResults">
+                    <i class="fas fa-trash"></i> Clear Results
+                </button>
+                <button class="btn btn-outline-primary" onclick="exportResults('json')">
+                    <i class="fas fa-download"></i> Export JSON
+                </button>
+                <button class="btn btn-outline-primary" onclick="exportResults('csv')">
+                    <i class="fas fa-file-csv"></i> Export CSV
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filtering Controls -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card bg-dark">
+            <div class="card-body">
+                <h5 class="card-title">Filters</h5>
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Date Range</label>
+                        <select class="form-select" id="dateFilter">
+                            <option value="all">All Time</option>
+                            <option value="today">Today</option>
+                            <option value="week">Last 7 Days</option>
+                            <option value="month">Last 30 Days</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Status</label>
+                        <select class="form-select" id="statusFilter">
+                            <option value="all">All Status</option>
+                            <option value="completed">Completed</option>
+                            <option value="running">Running</option>
+                            <option value="pending">Pending</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Sort By</label>
+                        <select class="form-select" id="sortBy">
+                            <option value="date_desc">Date (Newest First)</option>
+                            <option value="date_asc">Date (Oldest First)</option>
+                            <option value="name">Name</option>
+                            <option value="interactions">Interaction Count</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Search</label>
+                        <input type="text" class="form-control" id="searchFilter" placeholder="Search simulations...">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="simulationResults">
+{% for simulation in simulations %}
+<div class="row mb-4 simulation-item" 
+     data-date="{{ simulation.start_time.strftime('%Y-%m-%d') }}"
+     data-status="{{ simulation.status }}"
+     data-name="{{ simulation.name }}"
+     data-interactions="{{ simulation.analytics.total_interactions }}">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">{{ simulation.name }}</h5>
+                    <span class="badge bg-{{ 'success' if simulation.status == 'completed' 
+                                        else 'info' if simulation.status == 'running'
+                                        else 'secondary' }}">
+                        {{ simulation.status }}
+                    </span>
+                </div>
+                <small class="text-muted">
+                    {{ simulation.start_time.strftime('%Y-%m-%d %H:%M') }} - 
+                    {% if simulation.end_time %}
+                        {{ simulation.end_time.strftime('%Y-%m-%d %H:%M') }}
+                    {% else %}
+                        Ongoing
+                    {% endif %}
+                </small>
+            </div>
+            <div class="card-body">
+                <!-- Analytics Overview -->
+                <div class="row g-4 mb-4">
+                    <div class="col-md-3">
+                        <div class="card bg-dark">
+                            <div class="card-body">
+                                <h6 class="card-subtitle mb-2">Interaction Quality</h6>
+                                <div class="progress">
+                                    <div class="progress-bar bg-info" role="progressbar" 
+                                         style="width: {{ simulation.analytics.avg_metrics.interaction_quality * 10 }}%" 
+                                         aria-valuenow="{{ simulation.analytics.avg_metrics.interaction_quality }}" 
+                                         aria-valuemin="0" aria-valuemax="10">
+                                        {{ "%.1f"|format(simulation.analytics.avg_metrics.interaction_quality) }}/10
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-dark">
+                            <div class="card-body">
+                                <h6 class="card-subtitle mb-2">Communication Effectiveness</h6>
+                                <div class="progress">
+                                    <div class="progress-bar bg-success" role="progressbar" 
+                                         style="width: {{ simulation.analytics.avg_metrics.communication_effectiveness * 10 }}%" 
+                                         aria-valuenow="{{ simulation.analytics.avg_metrics.communication_effectiveness }}" 
+                                         aria-valuemin="0" aria-valuemax="10">
+                                        {{ "%.1f"|format(simulation.analytics.avg_metrics.communication_effectiveness) }}/10
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-dark">
+                            <div class="card-body">
+                                <h6 class="card-subtitle mb-2">Conflict Intensity</h6>
+                                <div class="progress">
+                                    <div class="progress-bar bg-warning" role="progressbar" 
+                                         style="width: {{ simulation.analytics.avg_metrics.conflict_intensity * 10 }}%" 
+                                         aria-valuenow="{{ simulation.analytics.avg_metrics.conflict_intensity }}" 
+                                         aria-valuemin="0" aria-valuemax="10">
+                                        {{ "%.1f"|format(simulation.analytics.avg_metrics.conflict_intensity) }}/10
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-dark">
+                            <div class="card-body">
+                                <h6 class="card-subtitle mb-2">Resolution Quality</h6>
+                                <div class="progress">
+                                    <div class="progress-bar bg-primary" role="progressbar" 
+                                         style="width: {{ simulation.analytics.avg_metrics.resolution_quality * 10 }}%" 
+                                         aria-valuenow="{{ simulation.analytics.avg_metrics.resolution_quality }}" 
+                                         aria-valuemin="0" aria-valuemax="10">
+                                        {{ "%.1f"|format(simulation.analytics.avg_metrics.resolution_quality) }}/10
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Row -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="chart-container" style="position: relative; height:300px;">
+                            <canvas class="resolution-chart" data-simulation-id="{{ simulation.id }}"
+                                    data-resolved="{{ simulation.analytics.resolution_stats.resolved }}"
+                                    data-partial="{{ simulation.analytics.resolution_stats.partially_resolved }}"
+                                    data-unresolved="{{ simulation.analytics.resolution_stats.unresolved }}">
+                            </canvas>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="chart-container" style="position: relative; height:300px;">
+                            <canvas class="relationship-chart" data-simulation-id="{{ simulation.id }}"
+                                    data-strengthened="{{ simulation.analytics.relationship_impact.strengthened }}"
+                                    data-unchanged="{{ simulation.analytics.relationship_impact.unchanged }}"
+                                    data-strained="{{ simulation.analytics.relationship_impact.strained }}">
+                            </canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Interaction Timeline -->
+                <div class="interaction-timeline">
+                    {% for interaction in simulation.interactions %}
+                    <div class="interaction-item card mb-3">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <strong>{{ interaction.initiator.name }}</strong>
+                                    <i class="fas fa-arrow-right mx-2"></i>
+                                    <strong>{{ interaction.receiver.name }}</strong>
+                                </div>
+                                <small class="text-muted">{{ interaction.timestamp.strftime('%H:%M:%S') }}</small>
+                            </div>
+                            <p class="mb-2">{{ interaction.content }}</p>
+                            {% if interaction.metadata %}
+                            <div class="interaction-metadata">
+                                <span class="badge bg-{{ 'success' if interaction.metadata.outcome.resolution_status == 'resolved' 
+                                                    else 'warning' if interaction.metadata.outcome.resolution_status == 'partially_resolved'
+                                                    else 'danger' }}">
+                                    {{ interaction.metadata.outcome.resolution_status }}
+                                </span>
+                                <span class="badge bg-{{ 'success' if interaction.metadata.outcome.relationship_impact == 'strengthened'
+                                                    else 'secondary' if interaction.metadata.outcome.relationship_impact == 'unchanged'
+                                                    else 'danger' }}">
+                                    {{ interaction.metadata.outcome.relationship_impact }}
+                                </span>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+</div>
+
+<!-- No Results Message -->
+<div id="noResults" class="alert alert-info" style="display: none;">
+    No simulations match your current filters.
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize all charts
+    initializeCharts();
+    
+    // Set up filtering
+    setupFilters();
+    
+    // Set up clear results
+    setupClearResults();
+});
+
+function initializeCharts() {
+    // Initialize Resolution Charts
+    document.querySelectorAll('.resolution-chart').forEach(canvas => {
+        const ctx = canvas.getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',  // Changed from doughnut to bar
+            data: {
+                labels: ['Resolved', 'Partially Resolved', 'Unresolved'],
+                datasets: [{
+                    data: [
+                        parseInt(canvas.dataset.resolved) || 0,
+                        parseInt(canvas.dataset.partial) || 0,
+                        parseInt(canvas.dataset.unresolved) || 0
+                    ],
+                    backgroundColor: ['#198754', '#ffc107', '#dc3545'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: 'y',  // Makes it a horizontal bar chart
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Resolution Status Distribution',
+                        color: '#fff'
+                    },
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        ticks: { color: '#fff' }
+                    },
+                    x: {
+                        ticks: { color: '#fff' }
+                    }
+                }
+            }
+        });
+    });
+
+    // Initialize Relationship Charts (keep as pie/doughnut)
+    document.querySelectorAll('.relationship-chart').forEach(canvas => {
+        const ctx = canvas.getContext('2d');
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Strengthened', 'Unchanged', 'Strained'],
+                datasets: [{
+                    data: [
+                        parseInt(canvas.dataset.strengthened) || 0,
+                        parseInt(canvas.dataset.unchanged) || 0,
+                        parseInt(canvas.dataset.strained) || 0
+                    ],
+                    backgroundColor: ['#198754', '#6c757d', '#dc3545'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Relationship Impact Distribution',
+                        color: '#fff'
+                    },
+                    legend: {
+                        position: 'bottom',
+                        labels: { color: '#fff' }
+                    }
+                }
+            }
+        });
+    });
+}
+
+function refreshCharts() {
+    const charts = Chart.getChart();
+    if (charts) {
+        charts.forEach(chart => chart.destroy());
+    }
+    initializeCharts();
+}
+
+function setupClearResults() {
+    const clearBtn = document.getElementById('clearResults');
+    if (!clearBtn) return;
+
+    clearBtn.addEventListener('click', async () => {
+        if (!confirm('Are you sure you want to clear all results? This action cannot be undone.')) {
+            return;
+        }
+
+        try {
+            const response = await fetch('/clear_results', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to clear results');
+            }
+
+            window.location.reload();
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Failed to clear results: ' + error.message);
+        }
+    });
+}
+
+function setupFilters() {
+    const filters = {
+        dateFilter: document.getElementById('dateFilter'),
+        statusFilter: document.getElementById('statusFilter'),
+        sortBy: document.getElementById('sortBy'),
+        searchFilter: document.getElementById('searchFilter')
+    };
+
+    // Add event listeners to all filters
+    Object.values(filters).forEach(filter => {
+        if (filter) {
+            filter.addEventListener('change', () => {
+                applyFilters();
+                refreshCharts(); // Add chart refresh on filter changes
+            });
+        }
+    });
+    
+    if (filters.searchFilter) {
+        filters.searchFilter.addEventListener('input', () => {
+            applyFilters();
+            refreshCharts(); // Add chart refresh on search changes
+        });
+    }
+
+    function applyFilters() {
+        const simulations = document.querySelectorAll('.simulation-item');
+        let visibleCount = 0;
+
+        simulations.forEach(simulation => {
+            const dateMatch = matchDateFilter(simulation, filters.dateFilter.value);
+            const statusMatch = matchStatusFilter(simulation, filters.statusFilter.value);
+            const searchMatch = matchSearchFilter(simulation, filters.searchFilter.value);
+
+            const shouldShow = dateMatch && statusMatch && searchMatch;
+            simulation.style.display = shouldShow ? '' : 'none';
+            if (shouldShow) visibleCount++;
+        });
+
+        document.getElementById('noResults').style.display = 
+            visibleCount === 0 ? 'block' : 'none';
+    }
+
+    function matchDateFilter(simulation, filterValue) {
+        if (filterValue === 'all') return true;
+        
+        const date = new Date(simulation.dataset.date);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        switch(filterValue) {
+            case 'today':
+                return date >= today;
+            case 'week':
+                const weekAgo = new Date(today);
+                weekAgo.setDate(today.getDate() - 7);
+                return date >= weekAgo;
+            case 'month':
+                const monthAgo = new Date(today);
+                monthAgo.setMonth(today.getMonth() - 1);
+                return date >= monthAgo;
+            default:
+                return true;
+        }
+    }
+
+    function matchStatusFilter(simulation, filterValue) {
+        return filterValue === 'all' || simulation.dataset.status === filterValue;
+    }
+
+    function matchSearchFilter(simulation, searchValue) {
+        if (!searchValue) return true;
+        const searchLower = searchValue.toLowerCase();
+        return simulation.dataset.name.toLowerCase().includes(searchLower);
+    }
+}
+
+// Add export functionality
+function exportResults(format) {
+    const simulations = Array.from(document.querySelectorAll('.simulation-item'))
+        .filter(sim => sim.style.display !== 'none')
+        .map(sim => ({
+            name: sim.dataset.name,
+            date: sim.dataset.date,
+            status: sim.dataset.status,
+            interactions: parseInt(sim.dataset.interactions)
+        }));
+
+    if (format === 'json') {
+        const dataStr = JSON.stringify(simulations, null, 2);
+        downloadFile(dataStr, 'simulation_results.json', 'application/json');
+    } else if (format === 'csv') {
+        const headers = ['Name', 'Date', 'Status', 'Interactions'];
+        const csvContent = [
+            headers.join(','),
+            ...simulations.map(sim => 
+                [sim.name, sim.date, sim.status, sim.interactions].join(',')
+            )
+        ].join('\n');
+        downloadFile(csvContent, 'simulation_results.csv', 'text/csv');
+    }
+}
+
+function downloadFile(content, fileName, contentType) {
+    const blob = new Blob([content], { type: contentType });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+}
+</script>
+{% endblock %}

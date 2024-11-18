@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <h2>Scenario Management</h2>
+            <div class="btn-group">
+                <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#newScenarioModal">
+                    <i class="fas fa-plus"></i> New Scenario
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Filters</h5>
+                <div class="mb-3">
+                    <label class="form-label">Category</label>
+                    <select class="form-select" id="categoryFilter">
+                        <option value="">All Categories</option>
+                        <option value="Professional">Professional</option>
+                        <option value="Service">Service</option>
+                        <option value="Technical">Technical</option>
+                        <option value="Healthcare">Healthcare</option>
+                        <option value="Education">Education</option>
+                        <option value="Research">Research</option>
+                        <option value="Management">Management</option>
+                        <option value="Creative">Creative</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Difficulty</label>
+                    <select class="form-select" id="difficultyFilter">
+                        <option value="">All Difficulties</option>
+                        <option value="Easy">Easy</option>
+                        <option value="Medium">Medium</option>
+                        <option value="Hard">Hard</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Duration</label>
+                    <select class="form-select" id="durationFilter">
+                        <option value="">All Durations</option>
+                        <option value="30">30 minutes or less</option>
+                        <option value="60">1 hour or less</option>
+                        <option value="90">90 minutes or less</option>
+                        <option value="120">2 hours or less</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-9">
+        <div class="row g-4" id="scenariosList">
+            {% for scenario in scenarios %}
+            <div class="col-md-6 scenario-card" 
+                 data-category="{{ scenario.category }}"
+                 data-difficulty="{{ scenario.difficulty }}"
+                 data-duration="{{ scenario.duration_minutes }}">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <h5 class="card-title">{{ scenario.name }}</h5>
+                            <span class="badge bg-{{ 'success' if scenario.difficulty == 'Easy' else 'warning' if scenario.difficulty == 'Medium' else 'danger' }}">
+                                {{ scenario.difficulty }}
+                            </span>
+                        </div>
+                        <p class="card-text">{{ scenario.description }}</p>
+                        <div class="scenario-details mt-3">
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <small class="text-muted d-block">Category:</small>
+                                    <span class="badge bg-info">{{ scenario.category }}</span>
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted d-block">Duration:</small>
+                                    <span class="badge bg-secondary">{{ scenario.duration_minutes }} mins</span>
+                                </div>
+                                <div class="col-12">
+                                    <small class="text-muted d-block">Participants:</small>
+                                    <span class="badge bg-primary">{{ scenario.min_participants }} - {{ scenario.max_participants }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- New Scenario Modal -->
+<div class="modal fade" id="newScenarioModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create New Scenario</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="newScenarioForm" method="POST">
+                    <div class="mb-3">
+                        <label class="form-label">Name</label>
+                        <input type="text" class="form-control" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-control" name="description" rows="3" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Context</label>
+                        <textarea class="form-control" name="context" rows="3" required></textarea>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Category</label>
+                                <select class="form-select" name="category" required>
+                                    <option value="Professional">Professional</option>
+                                    <option value="Service">Service</option>
+                                    <option value="Technical">Technical</option>
+                                    <option value="Healthcare">Healthcare</option>
+                                    <option value="Education">Education</option>
+                                    <option value="Research">Research</option>
+                                    <option value="Management">Management</option>
+                                    <option value="Creative">Creative</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Difficulty</label>
+                                <select class="form-select" name="difficulty" required>
+                                    <option value="Easy">Easy</option>
+                                    <option value="Medium">Medium</option>
+                                    <option value="Hard">Hard</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label">Min Participants</label>
+                                <input type="number" class="form-control" name="min_participants" min="2" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label">Max Participants</label>
+                                <input type="number" class="form-control" name="max_participants" min="2" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label">Duration (minutes)</label>
+                                <input type="number" class="form-control" name="duration_minutes" min="15" step="15" required>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" form="newScenarioForm" class="btn btn-primary">Create Scenario</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js"></script>
+<script src="{{ url_for('static', filename='js/scenarios.js') }}"></script>
+{% endblock %}

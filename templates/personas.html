@@ -1,0 +1,357 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Create New Persona</h5>
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Name</label>
+                        <input type="text" class="form-control" id="name" name="name" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="avatar" class="form-label">Avatar Style</label>
+                        <select class="form-select" id="avatar" name="avatar">
+                            <option value="professional">Professional</option>
+                            <option value="casual">Casual</option>
+                            <option value="artistic">Artistic</option>
+                            <option value="technical">Technical</option>
+                            <option value="friendly">Friendly</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="personality" class="form-label">Personality Description</label>
+                        <textarea class="form-control" id="personality" name="personality" rows="3" required 
+                            placeholder="Describe the core personality traits..."></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="interests" class="form-label">Interests & Expertise</label>
+                        <textarea class="form-control" id="interests" name="interests" rows="3" required
+                            placeholder="List main interests and areas of expertise..."></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="goals" class="form-label">Goals & Motivations</label>
+                        <textarea class="form-control" id="goals" name="goals" rows="3" required
+                            placeholder="Describe primary goals and motivations..."></textarea>
+                    </div>
+
+                    <!-- Real-world Traits Section -->
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h6 class="mb-0">Real-world Traits</h6>
+                        </div>
+                        <div class="card-body">
+                            <!-- Sliders for numerical traits -->
+                            <div class="mb-3">
+                                <label for="patience_level" class="form-label">Patience Level</label>
+                                <input type="range" class="form-range" id="patience_level" name="patience_level" min="1" max="10" value="5">
+                                <div class="d-flex justify-content-between">
+                                    <small>Low</small>
+                                    <small class="trait-value" data-for="patience_level">5</small>
+                                    <small>High</small>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="attention_to_detail" class="form-label">Attention to Detail</label>
+                                <input type="range" class="form-range" id="attention_to_detail" name="attention_to_detail" min="1" max="10" value="5">
+                                <div class="d-flex justify-content-between">
+                                    <small>Low</small>
+                                    <small class="trait-value" data-for="attention_to_detail">5</small>
+                                    <small>High</small>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="adaptability" class="form-label">Adaptability</label>
+                                <input type="range" class="form-range" id="adaptability" name="adaptability" min="1" max="10" value="5">
+                                <div class="d-flex justify-content-between">
+                                    <small>Low</small>
+                                    <small class="trait-value" data-for="adaptability">5</small>
+                                    <small>High</small>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="stress_tolerance" class="form-label">Stress Tolerance</label>
+                                <input type="range" class="form-range" id="stress_tolerance" name="stress_tolerance" min="1" max="10" value="5">
+                                <div class="d-flex justify-content-between">
+                                    <small>Low</small>
+                                    <small class="trait-value" data-for="stress_tolerance">5</small>
+                                    <small>High</small>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="organization_skills" class="form-label">Organization Skills</label>
+                                <input type="range" class="form-range" id="organization_skills" name="organization_skills" min="1" max="10" value="5">
+                                <div class="d-flex justify-content-between">
+                                    <small>Low</small>
+                                    <small class="trait-value" data-for="organization_skills">5</small>
+                                    <small>High</small>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="time_management" class="form-label">Time Management</label>
+                                <input type="range" class="form-range" id="time_management" name="time_management" min="1" max="10" value="5">
+                                <div class="d-flex justify-content-between">
+                                    <small>Low</small>
+                                    <small class="trait-value" data-for="time_management">5</small>
+                                    <small>High</small>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="creativity_level" class="form-label">Creativity Level</label>
+                                <input type="range" class="form-range" id="creativity_level" name="creativity_level" min="1" max="10" value="5">
+                                <div class="d-flex justify-content-between">
+                                    <small>Low</small>
+                                    <small class="trait-value" data-for="creativity_level">5</small>
+                                    <small>High</small>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="risk_tolerance" class="form-label">Risk Tolerance</label>
+                                <input type="range" class="form-range" id="risk_tolerance" name="risk_tolerance" min="1" max="10" value="5">
+                                <div class="d-flex justify-content-between">
+                                    <small>Low</small>
+                                    <small class="trait-value" data-for="risk_tolerance">5</small>
+                                    <small>High</small>
+                                </div>
+                            </div>
+
+                            <!-- Dropdowns for categorical traits -->
+                            <div class="mb-3">
+                                <label for="decision_style" class="form-label">Decision Style</label>
+                                <select class="form-select" id="decision_style" name="decision_style">
+                                    <option value="analytical">Analytical</option>
+                                    <option value="intuitive">Intuitive</option>
+                                    <option value="deliberate">Deliberate</option>
+                                    <option value="spontaneous">Spontaneous</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="learning_style" class="form-label">Learning Style</label>
+                                <select class="form-select" id="learning_style" name="learning_style">
+                                    <option value="visual">Visual</option>
+                                    <option value="auditory">Auditory</option>
+                                    <option value="kinesthetic">Kinesthetic</option>
+                                    <option value="reading/writing">Reading/Writing</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="behavior_pattern" class="form-label">Behavior Pattern</label>
+                        <select class="form-select" id="behavior_pattern" name="behavior_pattern">
+                            <option value="balanced">Balanced</option>
+                            <option value="proactive">Proactive</option>
+                            <option value="reactive">Reactive</option>
+                            <option value="analytical">Analytical</option>
+                            <option value="creative">Creative</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="interaction_style" class="form-label">Interaction Style</label>
+                        <select class="form-select" id="interaction_style" name="interaction_style">
+                            <option value="neutral">Neutral</option>
+                            <option value="formal">Formal</option>
+                            <option value="casual">Casual</option>
+                            <option value="enthusiastic">Enthusiastic</option>
+                            <option value="reserved">Reserved</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="emotional_range" class="form-label">Emotional Range</label>
+                        <select class="form-select" id="emotional_range" name="emotional_range">
+                            <option value="moderate">Moderate</option>
+                            <option value="expressive">Expressive</option>
+                            <option value="controlled">Controlled</option>
+                            <option value="volatile">Volatile</option>
+                            <option value="stable">Stable</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="communication_preference" class="form-label">Communication Style</label>
+                        <select class="form-select" id="communication_preference" name="communication_preference">
+                            <option value="direct">Direct</option>
+                            <option value="diplomatic">Diplomatic</option>
+                            <option value="detailed">Detailed</option>
+                            <option value="concise">Concise</option>
+                            <option value="storytelling">Storytelling</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="tags" class="form-label">Tags</label>
+                        <input type="text" class="form-control" id="tags" name="tags" 
+                            placeholder="Enter comma-separated tags">
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Create Persona</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <h2>Existing Personas</h2>
+        <div class="row g-4">
+            {% for persona in personas %}
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="avatar-icon me-3">
+                                <i class="fas fa-user-circle fa-2x"></i>
+                            </div>
+                            <div>
+                                <h5 class="card-title mb-0">{{ persona.name }}</h5>
+                                <small class="text-muted">Created: {{ persona.created_at.strftime('%Y-%m-%d') if persona.created_at else 'N/A' }}</small>
+                            </div>
+                        </div>
+                        
+                        <div class="persona-details">
+                            <p class="card-text"><strong>Personality:</strong><br>{{ persona.personality }}</p>
+                            <p class="card-text"><strong>Interests:</strong><br>{{ persona.interests }}</p>
+                            <p class="card-text"><strong>Goals:</strong><br>{{ persona.goals }}</p>
+                            
+                            <!-- Real-world Traits Display -->
+                            <div class="real-world-traits mt-3">
+                                <h6 class="mb-2">Real-world Traits</h6>
+                                <div class="trait-grid">
+                                    <!-- Numerical Traits -->
+                                    <div class="trait-item">
+                                        <label>Patience</label>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-info" role="progressbar" 
+                                                style="width: {{ (persona.patience_level / 10) * 100 }}%">
+                                                {{ persona.patience_level }}/10
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="trait-item">
+                                        <label>Attention to Detail</label>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-info" role="progressbar" 
+                                                style="width: {{ (persona.attention_to_detail / 10) * 100 }}%">
+                                                {{ persona.attention_to_detail }}/10
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="trait-item">
+                                        <label>Adaptability</label>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-success" role="progressbar" 
+                                                style="width: {{ (persona.adaptability / 10) * 100 }}%">
+                                                {{ persona.adaptability }}/10
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="trait-item">
+                                        <label>Stress Tolerance</label>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-warning" role="progressbar" 
+                                                style="width: {{ (persona.stress_tolerance / 10) * 100 }}%">
+                                                {{ persona.stress_tolerance }}/10
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Style Badges -->
+                                    <div class="trait-badges mt-2">
+                                        <span class="badge bg-primary">{{ persona.decision_style }}</span>
+                                        <span class="badge bg-info">{{ persona.learning_style }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Dynamic State Information -->
+                            <div class="dynamic-state mt-3">
+                                <h6 class="mb-2">Current State</h6>
+                                <div class="state-indicators">
+                                    <div class="mood-indicator">
+                                        <i class="fas fa-smile"></i>
+                                        <span>Neutral</span>
+                                    </div>
+                                    <div class="energy-level">
+                                        <div class="progress">
+                                            <div class="progress-bar bg-success" role="progressbar" style="width: 70%">
+                                                Energy: 7/10
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="stress-level">
+                                        <div class="progress">
+                                            <div class="progress-bar bg-danger" role="progressbar" style="width: 30%">
+                                                Stress: 3/10
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="persona-traits mt-3">
+                                <div class="trait-item">
+                                    <span class="badge bg-primary">{{ persona.behavior_pattern }}</span>
+                                </div>
+                                <div class="trait-item">
+                                    <span class="badge bg-info">{{ persona.interaction_style }}</span>
+                                </div>
+                                <div class="trait-item">
+                                    <span class="badge bg-warning">{{ persona.emotional_range }}</span>
+                                </div>
+                                <div class="trait-item">
+                                    <span class="badge bg-success">{{ persona.communication_preference }}</span>
+                                </div>
+                            </div>
+
+                            {% if persona.tags %}
+                            <div class="persona-tags mt-3">
+                                {% for tag in persona.tags.split(',') %}
+                                <span class="badge bg-secondary">{{ tag.strip() }}</span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Update trait values when sliders change
+    document.querySelectorAll('.form-range').forEach(slider => {
+        slider.addEventListener('input', function() {
+            const valueDisplay = document.querySelector(`.trait-value[data-for="${this.id}"]`);
+            if (valueDisplay) {
+                valueDisplay.textContent = this.value;
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
